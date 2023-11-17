@@ -1,42 +1,43 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: InfidelityScorePage(),
+    return MaterialApp(
+      title: 'Note App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: NoteListScreen(),
     );
   }
 }
 
-class InfidelityScorePage extends StatefulWidget {
-  const InfidelityScorePage({Key? key}) : super(key: key);
-
+class NoteListScreen extends StatefulWidget {
   @override
-  _InfidelityScorePageState createState() => _InfidelityScorePageState();
+  _NoteListScreenState createState() => _NoteListScreenState();
 }
 
-class _InfidelityScorePageState extends State<InfidelityScorePage> {
-  bool isLoading = false;
-  bool isButtonPressed = false;
-  int infidelityScore = 42; // hardcoded score
+class _NoteListScreenState extends State<NoteListScreen> {
+  List<Note> notes = [];
+  int selectedNoteIndex = -1;
 
-  void calculateInfidelityScore() { // calculation delay
+  void _addNote(Note note) {
     setState(() {
-      isLoading = true;
+      notes.add(note);
     });
+  }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        isLoading = false;
-        isButtonPressed = true;
-      });
+  void _selectNote(int index) {
+    setState(() {
+      if (selectedNoteIndex == index) {
+        // Toggle off if the same note is clicked again
+        selectedNoteIndex = -1;
+      } else {
+        selectedNoteIndex = index;
+      }
     });
   }
 
@@ -44,97 +45,134 @@ class _InfidelityScorePageState extends State<InfidelityScorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Infidelity Score Page'),
+        title: Text('Note List'),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Table(
-                columnWidths: const {
-                  0: FlexColumnWidth(1),
-                  1: FlexColumnWidth(2),
-                },
-                children: [
-                  TableRow(
-                    children: [
-                      const TableCell(
-                        child: Text('Partner:'),
-                      ),
-                      TableCell(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            print('Get New Partner'); // shows proof of press in console
-                          },
-                          child: const Text('Get New Partner'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      const TableCell(
-                        child: Text('Rival:'),
-                      ),
-                      TableCell(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            print('Get New Rival'); // shows proof of press in console
-                          },
-                          child: const Text('Get New Rival'), // button text
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+      body: ListView.builder(
+        itemCount: notes.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              _selectNote(index);
+            },
+            child: Container(
+              color: selectedNoteIndex == index ? Colors.yellow : null,
+              child: ListTile(
+                title: Text(notes[index].title),
+                subtitle: Text(notes[index].description),
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    print('Calculation Button Pressed'); // go button press
-                    calculateInfidelityScore();
-                  },
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.blue,
-                    ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    )
-                        : const Text(
-                      'Calculate',
-                      style: TextStyle(color: Colors.white, fontSize: 24),
-                    ),
-                  ),
-                ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddNoteScreen(_addNote)),
+          );
+        },
+        tooltip: 'Add Note',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class Note {
+  String title;
+  String description;
+
+  Note({
+    required this.title,
+    required this.description,
+  });
+}
+
+class AddNoteScreen extends StatefulWidget {
+  final Function(Note) onNoteAdded;
+
+  AddNoteScreen(this.onNoteAdded);
+
+  @override
+  _AddNoteScreenState createState() => _AddNoteScreenState();
+}
+
+class _AddNoteScreenState extends State<AddNoteScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Note'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(labelText: 'Title'),
+            ),
+            SizedBox(height: 16),
+            Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(8.0),
               ),
-              const SizedBox(height: 20),
-              if (isButtonPressed)
-                Center(
-                  child: Column(
-                    children: [
-                      const Text('Infidelity Score:'),
-                      const SizedBox(height: 10),
-                      isLoading
-                          ? const CircularProgressIndicator()
-                          : Text(
-                        '$infidelityScore', // Display infidelity score
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ],
-                  ),
+              child: TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.all(8.0),
+                  border: InputBorder.none,
                 ),
-            ],
-          ),
+                maxLines: 5, // Set the number of lines you want for the text box
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                String title = _titleController.text;
+                String description = _descriptionController.text;
+
+                if (title.isNotEmpty && description.isNotEmpty) {
+                  Note newNote = Note(
+                    title: title,
+                    description: description,
+                  );
+
+                  widget.onNoteAdded(newNote);
+
+                  Navigator.pop(context); // Go back to the NoteListScreen
+                } else {
+                  // Show an error message if title or description is empty
+                  // You can customize this part based on your requirements
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('Error'),
+                        content: Text('Title and Description cannot be empty.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
         ),
       ),
     );
