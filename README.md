@@ -1,3 +1,27 @@
+# Update 6
+Final Submission.
+Completed - Twitter-like application. 
+- Sign in to accounts
+- Create accounts
+- See all tweets by all accounts
+- Like any tweet
+- "Retweet" any tweet
+- Sidebar with different options to select
+- Account settings - Change profile picture
+- Profile - Display your own posts and all of your retweets
+- Can click on the username of posts to see other user's profiles
+- Can hide tweets
+- Can follow other accounts (Following section incomplete)
+- Everything is done through a Stream, and is updated in real-time
+
+Incomplete features
+- HTTP requests (just recreated Twitter instead)
+- Saving tweets
+- Commenting on tweets
+- Implementing feature that would judge if a "Partner Account" is cheating on you with a "Rival Account"
+- Following section
+- Updating username
+
 # Update 5
 Google sign-in incomplete, minor changes to sign-in form, bugfix that tweets will now update if users change their profile (upon reloading the For You) page.
 
